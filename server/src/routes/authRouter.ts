@@ -1,11 +1,10 @@
-import { Router, Request, Response, NextFunction } from "express";
+import { Router, Request, Response } from "express";
 import { User } from "../models/User";
 import jwt from "jsonwebtoken";
 import "dotenv/config";
-import { body, validationResult } from "express-validator";
+import { body } from "express-validator";
+import { validateRequest } from "../middlewares";
 import * as argon2 from "argon2";
-
-// import { validateRequest } from "../middlewares";
 
 const router = Router();
 
@@ -15,24 +14,7 @@ const router = Router();
 // const JWT_ACCESS_EXPIRY = process.env.JWT_ACCESS_EXPIRY; // Short-lived access token
 // const JWT_REFRESH_EXPIRY = process.env.JWT_REFRESH_EXPIRY; // Long-lived refresh token
 
-// Middleware to validate request body
-const validateRequest = (validations: any[]) => {
-    return async (
-        req: Request,
-        res: Response,
-        next: NextFunction
-    ): Promise<void> => {
-        await Promise.all(validations.map((validation) => validation.run(req)));
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-            res.status(400).json({ errors: errors.array() });
-            return;
-        }
-        next(); // Continue to the next middleware or request handler
-    };
-};
-
-//*implementation to generate access and refresh token*//
+//exec: to generate access and refresh token
 const generateAccessToken = (user: any) =>
     jwt.sign({ id: user.id, name: user.name }, "mySecretKey", {
         expiresIn: "15m",
@@ -42,7 +24,8 @@ const generateRefreshToken = (user: any) =>
         expiresIn: "1d",
     });
 
-// register a new user
+//exec: register a new
+
 router.post(
     "/registration",
     validateRequest([
@@ -94,7 +77,7 @@ router.post(
     }
 );
 
-// login an existig user
+//exec: login an existig user
 
 router.post(
     "/login",
