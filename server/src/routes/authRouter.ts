@@ -3,7 +3,7 @@ import { User } from "../models/User";
 import jwt from "jsonwebtoken";
 import "dotenv/config";
 import { body } from "express-validator";
-import { validateRequest } from "../middlewares";
+import { validateRequest, authenticateToken } from "../middlewares";
 import * as argon2 from "argon2";
 
 const router = Router();
@@ -129,6 +129,31 @@ router.post(
             console.error(error);
             res.status(500).json({ message: "Internal server error" });
             return;
+        }
+    }
+);
+
+// todo: need to fix this
+router.get(
+    "/profile",
+    authenticateToken,
+    async (req: Request, res: Response) => {
+        try {
+            // Fetch the user from the database using Sequelize
+            const user = await User.findByPk(req.user.userId, {
+                attributes: { exclude: ["password"] }, // Exclude the password field
+            });
+
+            // If the user is not found, return a 404 error
+            if (!user) {
+                return res.status(404).json({ message: "User not found" });
+            }
+
+            // Return the user data
+            res.status(200).json(user);
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ message: "Internal server error" });
         }
     }
 );

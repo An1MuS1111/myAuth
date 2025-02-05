@@ -6,6 +6,7 @@ const api = axios.create({
     headers: {
         "Content-Type": "application/json",
     },
+    withCredentials: true,
 });
 
 // exec: interceptor to attach the access token to the request

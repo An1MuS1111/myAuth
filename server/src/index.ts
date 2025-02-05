@@ -11,7 +11,7 @@ app.use(express.urlencoded({ extended: true }));
 
 import authRouter from "./routes/authRouter";
 
-app.use("/auths", authRouter);
+app.use("/auth", authRouter);
 
 // Define the port
 const PORT: number = process.env.PORT ? Number(process.env.PORT) : 4444;

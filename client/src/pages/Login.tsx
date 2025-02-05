@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { FC, useState } from "react";
 
 import { Eye, EyeOff } from "lucide-react";
 
@@ -16,15 +16,23 @@ import {
     CardFooter,
 } from "@/components/ui/card";
 
+import { useAuth } from "@/context/AuthContext";
+
 export default function Login() {
     const [showPassword, setShowPassword] = useState(false);
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const { login } = useAuth();
+
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         // Here you would typically handle the login logic
-        console.log("Login attempt with:", { email, password });
+        try {
+            await login(email, password);
+        } catch (error) {
+            alert("Login failed");
+        }
     };
 
     return (

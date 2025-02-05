@@ -6,10 +6,19 @@ import React, {
     ReactNode,
 } from "react";
 import axios from "axios";
+import {
+    setTokens,
+    clearTokens,
+    getAccessToken,
+    getRefreshToken,
+} from "@/utils/tokenUtils";
 
+import api from "@/axios/api";
 // Define types
 type User = {
     email: string;
+    name: string;
+
     // Add other user properties as needed
 };
 
@@ -17,7 +26,12 @@ type AuthContextType = {
     user: User | null;
     accessToken: string;
     login: (email: string, password: string) => Promise<void>;
-    register: (email: string, password: string) => Promise<void>;
+    registration: (
+        email: string,
+        password: string,
+        name: string,
+        telephone: string
+    ) => Promise<void>;
     logout: () => void;
 };
 
@@ -38,8 +52,29 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         localStorage.getItem("refreshToken") || ""
     );
 
-    // Function to log in the user
+    //exec: Function to log in the user
+
     const login = async (email: string, password: string) => {
+        try {
+            console.log("hit");
+            const response = await api.post("/auth/login", { email, password });
+            const { accessToken, refreshToken } = response.data;
+
+            // Store tokens in localStorage
+            setTokens(accessToken, refreshToken);
+            setAccessToken(accessToken);
+            setRefreshToken(refreshToken);
+
+            // Fetch user details
+            const userResponse = await api.get("/auth/profile");
+            setUser(userResponse.data);
+        } catch (error) {
+            console.error("Login failed:", error);
+            throw error;
+        }
+    };
+
+    /*    const login = async (email: string, password: string) => {
         try {
             const response = await axios.post(
                 "http://localhost:5000/auth/login",
@@ -67,13 +102,54 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             throw error;
         }
     };
+*/
+    //exec: Function to register a new user
 
-    // Function to register a new user
-    const register = async (email: string, password: string) => {
+    // const registration = async (
+    //     email: string,
+    //     password: string,
+    //     name: string,
+    //     telephone: string
+    // ) => {
+    //     try {
+    //         const response = await api.post("/auth/registration", {
+    //             email,
+    //             password,
+    //             name,
+    //             telephone,
+    //         });
+    //         const { accessToken, refreshToken } = response.data;
+
+    //         // Store tokens in localStorage
+
+    //         setTokens(accessToken, refreshToken);
+    //         setAccessToken(accessToken);
+    //         setRefreshToken(refreshToken);
+
+    //         // Fetch user details
+    //         const userResponse = await api.get("/auth/profile");
+    //         setUser(userResponse.data);
+    //     } catch (error) {
+    //         console.error("Registration failed:", error);
+    //         throw error;
+    //     }
+    // };
+
+    const registration = async (
+        email: string,
+        password: string,
+        name: string,
+        telephone: string
+    ) => {
         try {
             const response = await axios.post(
-                "http://localhost:5000/auth/register",
-                { email, password }
+                "http://localhost:4444/auth/registration",
+                {
+                    email,
+                    password,
+                    name,
+                    telephone,
+                }
             );
             const { accessToken, refreshToken } = response.data;
 
@@ -85,12 +161,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             setRefreshToken(refreshToken);
 
             // Fetch user details
-            const userResponse = await axios.get(
-                "http://localhost:5000/auth/profile",
-                {
-                    headers: { Authorization: `Bearer ${accessToken}` },
-                }
-            );
+            const userResponse = await api.get("/auth/profile");
             setUser(userResponse.data);
         } catch (error) {
             console.error("Registration failed:", error);
@@ -159,7 +230,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     return (
         <AuthContext.Provider
-            value={{ user, accessToken, login, register, logout }}
+            value={{ user, accessToken, login, registration, logout }}
         >
             {children}
         </AuthContext.Provider>

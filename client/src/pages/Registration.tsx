@@ -15,8 +15,8 @@ import {
     CardTitle,
     CardFooter,
 } from "@/components/ui/card";
-
 import api from "@/axios/api";
+import { useAuth } from "@/context/AuthContext";
 
 type FormType = {
     name: string;
@@ -35,6 +35,8 @@ export default function RegistrationPage() {
         telephone: "",
     });
 
+    const { registration } = useAuth();
+
     const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
         setFormData({
             ...formData,
@@ -44,17 +46,30 @@ export default function RegistrationPage() {
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
         // Here you would typically handle the registration logic
+        console.log(formData);
         try {
-            const response = await api.post("/auths/registration", formData, {
-                withCredentials: true,
-            });
-            console.log("Registration successful", response.data);
-        } catch (error: any) {
-            console.error(
-                "Registration error:",
-                error.response?.data || error.message
+            await registration(
+                formData.email,
+                formData.password,
+                formData.name,
+                formData.telephone
             );
+        } catch (error) {
+            // alert("Registration failed");
+            console.error("Registration failed:", error);
         }
+
+        // try {
+        //     const response = await api.post("/auth/registration", formData, {
+        //         withCredentials: true,
+        //     });
+        //     console.log("Registration successful", response.data);
+        // } catch (error: any) {
+        //     console.error(
+        //         "Registration error:",
+        //         error.response?.data || error.message
+        //     );
+        // }
     };
 
     return (
