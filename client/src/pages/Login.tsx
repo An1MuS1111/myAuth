@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Link } from "react-router-dom";
+
 import { Eye, EyeOff } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -15,8 +15,6 @@ import {
     CardTitle,
     CardFooter,
 } from "@/components/ui/card";
-
-import axiosInstance from "@/axios/axiosInstance";
 
 export default function Login() {
     const [showPassword, setShowPassword] = useState(false);

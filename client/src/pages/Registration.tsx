@@ -16,7 +16,7 @@ import {
     CardFooter,
 } from "@/components/ui/card";
 
-import axiosInstance from "@/axios/axiosInstance";
+import api from "@/axios/api";
 
 type FormType = {
     name: string;
@@ -45,13 +45,9 @@ export default function RegistrationPage() {
         e.preventDefault();
         // Here you would typically handle the registration logic
         try {
-            const response = await axiosInstance.post(
-                "/auths/registration",
-                formData,
-                {
-                    withCredentials: true,
-                }
-            );
+            const response = await api.post("/auths/registration", formData, {
+                withCredentials: true,
+            });
             console.log("Registration successful", response.data);
         } catch (error: any) {
             console.error(
