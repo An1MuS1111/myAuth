@@ -39,6 +39,7 @@ type AuthContextType = {
     login: (formData: LoginFormType) => Promise<void>;
     registration: (formData: RegistrationFormType) => Promise<void>;
     logout: () => void;
+    loading: boolean;
 };
 
 type AuthProviderProps = {
@@ -57,6 +58,29 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const [refreshToken, setRefreshToken] = useState<string>(
         localStorage.getItem("refreshToken") || ""
     );
+    const [loading, setLoading] = useState(true);
+
+    // exec: to fetch user info each time the access token changes or page loads
+    useEffect(() => {
+        const initializeUser = async () => {
+            setLoading(true); // Set loading to true *before* fetching
+            if (accessToken) {
+                try {
+                    const userResponse = await api.get("/auth/profile");
+                    setUser(userResponse.data);
+                } catch (error) {
+                    console.error("Error fetching user:", error);
+                    clearTokens();
+                    setAccessToken("");
+                    setRefreshToken("");
+                    setUser(null); // Important: Set user to null on error
+                }
+            }
+            setLoading(false); // Set loading to false *after* fetch completes (or fails)
+        };
+
+        initializeUser();
+    }, [accessToken]);
 
     //exec: Function to log in the user
 
@@ -117,13 +141,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     // Function to refresh the access token
     const refreshAccessToken = async () => {
         try {
-            const response = await axios.post(
-                "http://localhost:5000/auth/refresh-token",
-                {
-                    refreshToken,
-                }
-            );
+            const response = await api.post("/auth/refresh-token", {
+                refreshToken,
+            });
             const { accessToken } = response.data;
+
+            console.log("Refreshed access token:", accessToken);
 
             localStorage.setItem("accessToken", accessToken);
             setAccessToken(accessToken);
@@ -133,7 +156,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         }
     };
 
-    // Intercept requests to refresh the access token if expired
+    // todo: need to fix this(access token not being updated when it expires)
+    //exec: Intercept requests to refresh the access token if expired
     useEffect(() => {
         const requestInterceptor = axios.interceptors.request.use(
             (config) => {
@@ -150,9 +174,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             async (error) => {
                 const originalRequest = error.config;
                 if (error.response?.status === 401 && !originalRequest._retry) {
-                    originalRequest._retry = true;
-                    await refreshAccessToken();
-                    return axios(originalRequest);
+                    originalRequest._retry = true; // Should be set here automatically by Axios
+                    try {
+                        await refreshAccessToken();
+                        console.log("Access token refreshed");
+                        originalRequest.headers[
+                            "Authorization"
+                        ] = `Bearer ${getAccessToken()}`; // Set the header with the *new* token before retrying
+                        return axios(originalRequest); // Retry the original request
+                    } catch (refreshError) {
+                        console.error("Token refresh failed:", refreshError);
+                        logout();
+                        return Promise.reject(refreshError); // Reject the promise to stop the retry loop
+                    }
                 }
                 return Promise.reject(error);
             }
@@ -166,7 +200,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     return (
         <AuthContext.Provider
-            value={{ user, accessToken, login, registration, logout }}
+            value={{ user, accessToken, login, registration, logout, loading }}
         >
             {children}
         </AuthContext.Provider>

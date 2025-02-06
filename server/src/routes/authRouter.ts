@@ -21,19 +21,17 @@ declare global {
 }
 
 // Environment variables
-// const JWT_ACCESS_SECRET = process.env.JWT_ACCESS_SECRET;
-// const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET;
-// const JWT_ACCESS_EXPIRY = process.env.JWT_ACCESS_EXPIRY; // Short-lived access token
-// const JWT_REFRESH_EXPIRY = process.env.JWT_REFRESH_EXPIRY; // Long-lived refresh token
+const JWT_ACCESS_SECRET: string = process.env.JWT_ACCESS_SECRET!;
+const JWT_REFRESH_SECRET: string = process.env.JWT_REFRESH_SECRET!;
 
 //exec: to generate access and refresh token
 const generateAccessToken = (user: any) =>
-    jwt.sign({ id: user.id, name: user.name }, "mySecretKey", {
-        expiresIn: "15m",
+    jwt.sign({ id: user.id, name: user.name }, JWT_ACCESS_SECRET, {
+        expiresIn: "1m",
     });
 const generateRefreshToken = (user: any) =>
-    jwt.sign({ id: user.id, name: user.name }, "myRefreshSecretKey", {
-        expiresIn: "1d",
+    jwt.sign({ id: user.id, name: user.name }, JWT_REFRESH_SECRET, {
+        expiresIn: "7d",
     });
 
 //exec: register a new
@@ -178,5 +176,42 @@ router.get(
         }
     }
 );
+
+// exec: refresh token
+router.post("/refresh-token", async (req: Request, res: Response) => {
+    try {
+        const { refreshToken } = req.body;
+
+        if (!refreshToken) {
+            res.status(401).json({ message: "Refresh token not provided" });
+            return;
+        }
+
+        // verify refresh token
+        const decodedToken = jwt.verify(refreshToken, JWT_REFRESH_SECRET) as {
+            id: number;
+        };
+
+        // Find the user and validate the refresh token
+
+        const user = await User.findByPk(decodedToken.id);
+        if (!user) {
+            res.status(403).json({ message: "Invalid refresh token" });
+            return;
+        }
+
+        // generate new access token and refresh token
+        const accessToken = generateAccessToken(user);
+        // const newRefreshToken = generateRefreshToken(user);
+
+        res.status(200).json({
+            accessToken,
+            // refreshToken: newRefreshToken,
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(403).json({ message: "Invalid or expired refresh token" });
+    }
+});
 
 export default router;
