@@ -22,16 +22,17 @@ type User = {
     // Add other user properties as needed
 };
 
+type FormType = {
+    email: string;
+    password: string;
+    name: string;
+    telephone: string;
+};
 type AuthContextType = {
     user: User | null;
     accessToken: string;
     login: (email: string, password: string) => Promise<void>;
-    registration: (
-        email: string,
-        password: string,
-        name: string,
-        telephone: string
-    ) => Promise<void>;
+    registration: (formData: FormType) => Promise<void>;
     logout: () => void;
 };
 
@@ -105,54 +106,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 */
     //exec: Function to register a new user
 
-    // const registration = async (
-    //     email: string,
-    //     password: string,
-    //     name: string,
-    //     telephone: string
-    // ) => {
-    //     try {
-    //         const response = await api.post("/auth/registration", {
-    //             email,
-    //             password,
-    //             name,
-    //             telephone,
-    //         });
-    //         const { accessToken, refreshToken } = response.data;
-
-    //         // Store tokens in localStorage
-
-    //         setTokens(accessToken, refreshToken);
-    //         setAccessToken(accessToken);
-    //         setRefreshToken(refreshToken);
-
-    //         // Fetch user details
-    //         const userResponse = await api.get("/auth/profile");
-    //         setUser(userResponse.data);
-    //     } catch (error) {
-    //         console.error("Registration failed:", error);
-    //         throw error;
-    //     }
-    // };
-
-    const registration = async (
-        email: string,
-        password: string,
-        name: string,
-        telephone: string
-    ) => {
+    const registration = async (formData: FormType) => {
         try {
-            const response = await axios.post(
-                "http://localhost:4444/auth/registration",
-                {
-                    email,
-                    password,
-                    name,
-                    telephone,
-                }
-            );
+            const response = await api.post("/auth/registration", formData);
             const { accessToken, refreshToken } = response.data;
 
+            console.log("Registration successful", response.data);
             // Store tokens in localStorage
             localStorage.setItem("accessToken", accessToken);
             localStorage.setItem("refreshToken", refreshToken);
@@ -163,8 +122,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             // Fetch user details
             const userResponse = await api.get("/auth/profile");
             setUser(userResponse.data);
+            console.log(userResponse.data);
         } catch (error) {
-            console.error("Registration failed:", error);
+            console.error("Registration failedf:", error);
             throw error;
         }
     };

@@ -1,5 +1,3 @@
-"use client";
-
 import { useState, ChangeEvent, FormEvent } from "react";
 
 import { Eye, EyeOff } from "lucide-react";
@@ -43,17 +41,12 @@ export default function RegistrationPage() {
             [e.target.name]: e.target.value,
         });
     };
-    const handleSubmit = async (e: FormEvent) => {
+    const handleSubmit = (e: FormEvent) => {
         e.preventDefault();
         // Here you would typically handle the registration logic
-        console.log(formData);
+        // console.log(formData);
         try {
-            await registration(
-                formData.email,
-                formData.password,
-                formData.name,
-                formData.telephone
-            );
+            registration(formData);
         } catch (error) {
             // alert("Registration failed");
             console.error("Registration failed:", error);

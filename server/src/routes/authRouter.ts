@@ -55,6 +55,8 @@ router.post(
                     telephone,
                 });
 
+                console.log(newUser.get({ plain: true }));
+
                 // generate access token and refresh token
                 const accessToken = generateAccessToken(newUser);
                 const refreshToken = generateRefreshToken(newUser);
@@ -105,6 +107,8 @@ router.post(
                     password
                 );
                 if (isPasswordValid) {
+                    console.log(user);
+
                     // generate access token and refresh token
                     const accessToken = generateAccessToken(user);
                     const refreshToken = generateRefreshToken(user);
@@ -133,23 +137,40 @@ router.post(
     }
 );
 
+type DecodedTokenType = {
+    userId?: number;
+};
+
+declare global {
+    namespace Express {
+        interface Request {
+            user?: DecodedTokenType; // Make 'user' optional, as it might not always be there
+        }
+    }
+}
+
 // todo: need to fix this
 router.get(
     "/profile",
     authenticateToken,
-    async (req: Request, res: Response) => {
+    async (req: Request, res: Response): Promise<void> => {
+        // No need for the extra type here
         try {
-            // Fetch the user from the database using Sequelize
-            const user = await User.findByPk(req.user.userId, {
-                attributes: { exclude: ["password"] }, // Exclude the password field
-            });
-
-            // If the user is not found, return a 404 error
-            if (!user) {
-                return res.status(404).json({ message: "User not found" });
+            if (!req.user) {
+                // Check if req.user exists (important!)
+                res.status(401).json({ message: "Unauthorized" }); // or 403
+                return;
             }
 
-            // Return the user data
+            const user = await User.findByPk(req.user.userId, {
+                attributes: { exclude: ["password"] },
+            });
+
+            if (!user) {
+                res.status(404).json({ message: "User not found" });
+                return;
+            }
+
             res.status(200).json(user);
         } catch (error) {
             console.error(error);
