@@ -1,5 +1,5 @@
 import { useState, ChangeEvent, FormEvent } from "react";
-
+import { useNavigate } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -13,7 +13,7 @@ import {
     CardTitle,
     CardFooter,
 } from "@/components/ui/card";
-import api from "@/axios/api";
+
 import { useAuth } from "@/context/AuthContext";
 
 type FormType = {
@@ -25,6 +25,8 @@ type FormType = {
 
 export default function RegistrationPage() {
     const [showPassword, setShowPassword] = useState(false);
+
+    const navigate = useNavigate();
 
     const [formData, setFormData] = useState<FormType>({
         name: "",
@@ -41,12 +43,13 @@ export default function RegistrationPage() {
             [e.target.name]: e.target.value,
         });
     };
-    const handleSubmit = (e: FormEvent) => {
+    const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
         // Here you would typically handle the registration logic
         // console.log(formData);
         try {
-            registration(formData);
+            await registration(formData);
+            navigate("/profile");
         } catch (error) {
             // alert("Registration failed");
             console.error("Registration failed:", error);

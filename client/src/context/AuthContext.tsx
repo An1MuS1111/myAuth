@@ -22,7 +22,12 @@ type User = {
     // Add other user properties as needed
 };
 
-type FormType = {
+type LoginFormType = {
+    email: string;
+    password: string;
+};
+
+type RegistrationFormType = {
     email: string;
     password: string;
     name: string;
@@ -31,8 +36,8 @@ type FormType = {
 type AuthContextType = {
     user: User | null;
     accessToken: string;
-    login: (email: string, password: string) => Promise<void>;
-    registration: (formData: FormType) => Promise<void>;
+    login: (formData: LoginFormType) => Promise<void>;
+    registration: (formData: RegistrationFormType) => Promise<void>;
     logout: () => void;
 };
 
@@ -55,10 +60,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     //exec: Function to log in the user
 
-    const login = async (email: string, password: string) => {
+    const login = async (formData: LoginFormType) => {
         try {
             console.log("hit");
-            const response = await api.post("/auth/login", { email, password });
+            const response = await api.post("/auth/login", formData);
             const { accessToken, refreshToken } = response.data;
 
             // Store tokens in localStorage
@@ -75,38 +80,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         }
     };
 
-    /*    const login = async (email: string, password: string) => {
-        try {
-            const response = await axios.post(
-                "http://localhost:5000/auth/login",
-                { email, password }
-            );
-            const { accessToken, refreshToken } = response.data;
-
-            // Store tokens in localStorage
-            localStorage.setItem("accessToken", accessToken);
-            localStorage.setItem("refreshToken", refreshToken);
-
-            setAccessToken(accessToken);
-            setRefreshToken(refreshToken);
-
-            // Fetch user details
-            const userResponse = await axios.get(
-                "http://localhost:5000/auth/profile",
-                {
-                    headers: { Authorization: `Bearer ${accessToken}` },
-                }
-            );
-            setUser(userResponse.data);
-        } catch (error) {
-            console.error("Login failed:", error);
-            throw error;
-        }
-    };
-*/
     //exec: Function to register a new user
 
-    const registration = async (formData: FormType) => {
+    const registration = async (formData: RegistrationFormType) => {
         try {
             const response = await api.post("/auth/registration", formData);
             const { accessToken, refreshToken } = response.data;

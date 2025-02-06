@@ -8,37 +8,6 @@ type DecodedTokenType = {
 };
 
 //exec: Middleware to authenticate access token
-// todo: need to fix this shit
-// const authenticateToken = async (
-//     req: Request,
-//     res: Response,
-//     next: NextFunction
-// ) => {
-//     const authHeader = req.headers.authorization;
-//     const token = authHeader && authHeader.split(" ")[1]; //Bearer <token>
-
-//     if (token == null) {
-//         return res
-//             .status(401)
-//             .json({ message: "Unauthorized, No token provided" });
-//     }
-
-//     try {
-//         const decodedToken = jwt.verify(
-//             token,
-//             JWT_ACCESS_SECRET
-//         ) as DecodedTokenType;
-
-//         req.user = { userId: decodedToken.userId };
-//         next();
-//     } catch (error) {
-//         console.error("Token verification error:", error); // Log the error for debugging
-//         return res.status(403).json({ message: "Invalid token" }); // Or just 403
-//     }
-
-//     return;
-// };
-
 const authenticateToken = async (
     req: Request,
     res: Response,

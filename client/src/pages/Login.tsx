@@ -1,6 +1,8 @@
 "use client";
 
-import { FC, useState } from "react";
+import { useState, ChangeEvent } from "react";
+
+import { useNavigate } from "react-router-dom";
 
 import { Eye, EyeOff } from "lucide-react";
 
@@ -18,18 +20,34 @@ import {
 
 import { useAuth } from "@/context/AuthContext";
 
+type FormType = {
+    password: string;
+    email: string;
+};
+
 export default function Login() {
     const [showPassword, setShowPassword] = useState(false);
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
+    const [formData, setFormData] = useState<FormType>({
+        email: "",
+        password: "",
+    });
+    const navigate = useNavigate();
 
     const { login } = useAuth();
+
+    const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+        setFormData({
+            ...formData,
+            [e.target.name]: e.target.value,
+        });
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         // Here you would typically handle the login logic
         try {
-            await login(email, password);
+            await login(formData);
+            navigate("/profile");
         } catch (error) {
             console.error("Login failed:", error);
         }
@@ -53,9 +71,10 @@ export default function Login() {
                             <Input
                                 id="email"
                                 type="email"
+                                name="email"
                                 placeholder="Enter your email"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
+                                value={formData.email}
+                                onChange={handleChange}
                                 required
                             />
                         </div>
@@ -81,10 +100,9 @@ export default function Login() {
                                     id="password"
                                     type={showPassword ? "text" : "password"}
                                     placeholder="Enter your password"
-                                    value={password}
-                                    onChange={(e) =>
-                                        setPassword(e.target.value)
-                                    }
+                                    name="password"
+                                    value={formData.password}
+                                    onChange={handleChange}
                                     required
                                 />
                                 <button

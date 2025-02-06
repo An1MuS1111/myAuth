@@ -8,6 +8,18 @@ import * as argon2 from "argon2";
 
 const router = Router();
 
+type DecodedTokenType = {
+    userId?: number;
+};
+
+declare global {
+    namespace Express {
+        interface Request {
+            user?: DecodedTokenType; // Make 'user' optional, as it might not always be there
+        }
+    }
+}
+
 // Environment variables
 // const JWT_ACCESS_SECRET = process.env.JWT_ACCESS_SECRET;
 // const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET;
@@ -137,19 +149,7 @@ router.post(
     }
 );
 
-type DecodedTokenType = {
-    userId?: number;
-};
-
-declare global {
-    namespace Express {
-        interface Request {
-            user?: DecodedTokenType; // Make 'user' optional, as it might not always be there
-        }
-    }
-}
-
-// todo: need to fix this
+// exec: get user profile
 router.get(
     "/profile",
     authenticateToken,
