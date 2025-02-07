@@ -10,7 +10,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Bell, Shield, UserCircle } from "lucide-react";
-
+import { useNavigate } from "react-router-dom";
 export default function Profile() {
     // Placeholder data - in a real app, this would come from your state or API
     const userEmail = "john.doe@example.com";
@@ -34,9 +34,12 @@ export default function Profile() {
         },
     ];
 
+    const navigate = useNavigate();
+
     const handleLogoutAllDevices = () => {
         // Implement logout logic here
         console.log("Logging out of all devices");
+        navigate("/blank");
     };
 
     return (

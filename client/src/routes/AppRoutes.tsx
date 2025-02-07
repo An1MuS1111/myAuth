@@ -8,6 +8,7 @@ import {
 import Login from "../pages/Login";
 import Registration from "../pages/Registration";
 import Profile from "@/pages/Profile";
+import Blank from "@/pages/Blank";
 import { AuthProvider } from "@/context/AuthContext";
 import ProtectedRoutes from "./ProtectedRoutes";
 export default function AppRoutes() {
@@ -20,6 +21,7 @@ export default function AppRoutes() {
                     <Route path="/registration" element={<Registration />} />
                     <Route element={<ProtectedRoutes />}>
                         <Route path="/profile" element={<Profile />} />
+                        <Route path="/blank" element={<Blank />} />
                     </Route>
                 </Routes>
             </AuthProvider>

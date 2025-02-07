@@ -5,13 +5,8 @@ import React, {
     useEffect,
     ReactNode,
 } from "react";
-import axios from "axios";
-import {
-    setTokens,
-    clearTokens,
-    getAccessToken,
-    getRefreshToken,
-} from "@/utils/tokenUtils";
+
+import { setTokens, clearTokens } from "@/utils/tokenUtils";
 
 import api from "@/axios/api";
 // Define types
@@ -139,64 +134,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     };
 
     // Function to refresh the access token
-    const refreshAccessToken = async () => {
-        try {
-            const response = await api.post("/auth/refresh-token", {
-                refreshToken,
-            });
-            const { accessToken } = response.data;
+    // const refreshAccessToken = async () => {
+    //     try {
+    //         const response = await api.post("/auth/refresh-token", {
+    //             refreshToken,
+    //         });
+    //         const { accessToken } = response.data;
 
-            console.log("Refreshed access token:", accessToken);
+    //         console.log("Refreshed access token:", accessToken);
 
-            localStorage.setItem("accessToken", accessToken);
-            setAccessToken(accessToken);
-        } catch (error) {
-            console.error("Failed to refresh token:", error);
-            logout(); // Logout if refresh token is invalid
-        }
-    };
-
-    // todo: need to fix this(access token not being updated when it expires)
-    //exec: Intercept requests to refresh the access token if expired
-    useEffect(() => {
-        const requestInterceptor = axios.interceptors.request.use(
-            (config) => {
-                if (!config.headers["Authorization"]) {
-                    config.headers["Authorization"] = `Bearer ${accessToken}`;
-                }
-                return config;
-            },
-            (error) => Promise.reject(error)
-        );
-
-        const responseInterceptor = axios.interceptors.response.use(
-            (response) => response,
-            async (error) => {
-                const originalRequest = error.config;
-                if (error.response?.status === 401 && !originalRequest._retry) {
-                    originalRequest._retry = true; // Should be set here automatically by Axios
-                    try {
-                        await refreshAccessToken();
-                        console.log("Access token refreshed");
-                        originalRequest.headers[
-                            "Authorization"
-                        ] = `Bearer ${getAccessToken()}`; // Set the header with the *new* token before retrying
-                        return axios(originalRequest); // Retry the original request
-                    } catch (refreshError) {
-                        console.error("Token refresh failed:", refreshError);
-                        logout();
-                        return Promise.reject(refreshError); // Reject the promise to stop the retry loop
-                    }
-                }
-                return Promise.reject(error);
-            }
-        );
-
-        return () => {
-            axios.interceptors.request.eject(requestInterceptor);
-            axios.interceptors.response.eject(responseInterceptor);
-        };
-    }, [accessToken, refreshToken]);
+    //         localStorage.setItem("accessToken", accessToken);
+    //         setAccessToken(accessToken);
+    //     } catch (error) {
+    //         console.error("Failed to refresh token:", error);
+    //         logout(); // Logout if refresh token is invalid
+    //     }
+    // };
 
     return (
         <AuthContext.Provider
